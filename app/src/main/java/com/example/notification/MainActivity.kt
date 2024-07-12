@@ -11,17 +11,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.app.NotificationManagerCompat
+import com.example.notification.Utils.NOTIFICATION_ID
 import com.example.notification.ui.theme.NotificationTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID)
         setContent {
             NotificationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
+                        name = "Notification Sample App",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
