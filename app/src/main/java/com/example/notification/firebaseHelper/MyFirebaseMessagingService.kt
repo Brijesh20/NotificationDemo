@@ -32,18 +32,24 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         // Check if message contains a data payload.
+        var title: String? = null
+        var body: String? = null
         if (remoteMessage.data.isNotEmpty()) {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")
+            title = remoteMessage.data["title"]
+            body = remoteMessage.data["body"]
         }
 
         // Check if message contains a notification payload.
         remoteMessage.notification?.let {
             Log.d(TAG, "Message Notification Body: ${it.body}")
-            createNotification(it)
+            title = it.title
+            body = it.body
         }
+        title?.let { createNotification(it, body) }
     }
 
-    private fun createNotification(it: RemoteMessage.Notification) {
+    private fun createNotification(it: String, body: String?) {
         // Register the channel with the system
         val notificationManager: NotificationManager =
             getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -51,10 +57,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                it.title,
+                it,
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = it.body
+                description = body
             }
             notificationManager.createNotificationChannel(channel)
         }
@@ -67,7 +73,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         // Create a NotificationCompat.Builder and set the notification content
         val builder =
-            createNotificationBuilder(it, activityActionPendingAction, actionPendingAction)
+            createNotificationBuilder(it,body, activityActionPendingAction, actionPendingAction)
 
         // Show the notification
         showNotification(builder, notificationManager)
@@ -118,14 +124,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         ).build()
 
     private fun createNotificationBuilder(
-        it: RemoteMessage.Notification,
+        it: String,
+        body: String?,
         activityActionPendingAction: NotificationCompat.Action,
         actionPendingAction: NotificationCompat.Action
     ): NotificationCompat.Builder {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentTitle(it.title)
-            .setContentText(it.body)
+            .setContentTitle(it)
+            .setContentText(body)
             .addAction(actionPendingAction/*getRejectPendingAction()*/)
             .addAction(activityActionPendingAction/*getAnswerPendingAction()*/)
             .setAutoCancel(true)
